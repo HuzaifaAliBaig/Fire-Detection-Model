@@ -11,13 +11,28 @@ def read_classes_from_file(file_path):
 
 # Function to ask the user for a model
 def select_model():
+    """
+     Ask the user to select a model. This is a convenience function for interacting with the user in order to select a model.
+     
+     
+     @return The name of the selected model or None if the user chose to select a model without prompting
+    """
     print("Please select a model (e.g. 'bestfire'): ")
     model_name = input()
     return model_name
 
 # Function to process the video and detect fire
 def process_video(input_video_path, output_video_path, model, class_list):
+    """
+     Process video and save to output video. This function is used to perform object detection on the video.
+     
+     @param input_video_path - Path to the video file
+     @param output_video_path - Path to the output video
+     @param model - Class detection model to use. The class detection model must have a track method that takes a frame as input and returns a list of class names
+     @param class_list
+    """
     cap = cv2.VideoCapture(input_video_path)
+    # If the video file is not open
     if not cap.isOpened():
         print("Error: Could not open video file.")
         return
@@ -34,6 +49,7 @@ def process_video(input_video_path, output_video_path, model, class_list):
     frame_count = 0
     frame_skip_threshold = 1
 
+    # The method reads the frame from the input stream and writes the processed frame to the output video.
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -50,6 +66,7 @@ def process_video(input_video_path, output_video_path, model, class_list):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         a = results[0].boxes.data
         px = pd.DataFrame(a).astype("float")
+        # Draw a rectangle of the image.
         for index, row in px.iterrows():
             x1 = int(row[0])
             y1 = int(row[1])
@@ -82,6 +99,9 @@ def process_video(input_video_path, output_video_path, model, class_list):
 
 # Main function
 def main():
+    """
+     Main function for the program. Reads the model and class list from the text files and applies the model
+    """
     # Ask user for a model
     model_name = select_model()
     
@@ -90,6 +110,7 @@ def main():
     model = YOLO(model_path)
     
     # Load class list based on the selected model
+    # Load the bestfire model from the file
     if model_name == "bestfire":
         class_list = read_classes_from_file('fireSmoke.txt')
     else:
@@ -102,5 +123,6 @@ def main():
     # Process the video and apply the model
     process_video(input_video_path, output_video_path, model, class_list)
 
+# main function for the main module
 if __name__ == "__main__":
     main()
